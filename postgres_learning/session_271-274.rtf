@@ -1,0 +1,81 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2706
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 -- Indexes for sorted output\
+\
+explain select * from t_big\
+order by id\
+limit 20 -- 125505.43\
+\
+explain select * from t_big\
+order by name\
+limit 20 -- 125505.43\
+\
+explain select \
+min(id),\
+max(id)\
+from t_big\
+\
+-- using multiple indexes on a single query \
+explain select * \
+from t_big\
+where \
+	id = 20\
+	or id = 40\
+\
+-- execution plan depends on input values\
+\
+create index idx_t_big_name on t_big (name)\
+\
+explain select * from t_big\
+where name = 'Adam'\
+limit 10 -- seq scan, no indexing used\
+\
+explain select * from t_big\
+where name = 'Adam' or name = 'Linda'\
+limit 10 -- seq scan, no indexing used\
+\
+explain select * from t_big\
+where name = 'Adam2' or name = 'Linda2'\
+limit 10 -- bit map scan\
+\
+-- using organised vs random data\
+\
+select * from t_big order by id limit 10\
+\
+explain (analyze true, buffers true, timing true)\
+select * from t_big where id < 10000\
+\
+\
+--order by random()\
+\
+create table t_big_random as select * from t_big order by random ();\
+\
+create index idx_t_big_random_id on t_big_random(id)\
+\
+select * from t_big_random limit 10\
+\
+--vacuum analyze table_name;\
+\
+vacuum analyze t_big_random;\
+\
+explain (analyze true, buffers true, timing true)\
+select * from t_big_random where id < 10000\
+\
+pg_stats\
+\
+select \
+	tablename,\
+	attname, \
+	correlation\
+from pg_stats\
+where \
+	tablename in ('t_big', 't_big_random')\
+order by \
+	1,2\
+\
+}

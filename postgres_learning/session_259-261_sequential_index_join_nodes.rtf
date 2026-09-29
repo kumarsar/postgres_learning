@@ -1,0 +1,63 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2706
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 \
+-- Index nodes\
+\
+/*\
+1. Not so optimised performance wise\
+	-- Explain select * from orders;\
+*/\
+\
+-- Index nodes\
+\
+/*\
+1. An index is used to access the dataset\
+2. Data file and index files are separated but they are nearby\
+3. Index nodes scan type : \
+	Index scan : 		index -> seeking the tuples -> then read the data again\
+		select * from orders where order_id = 1\
+		explain select * from orders where order_id = 1\
+\
+	Index only scan : 	requested index cols only -> directly get data from index file\
+		explain select order_id from orders where order_id = 1\
+\
+	Bitmap index scan : builds a memory bitmap of where tuples that satisfy the statement clauses\
+\
+*/\
+\
+-- Join nodes\
+\
+/*\
+1. Used when joining the tables\
+2. Joins are performed on two tables at a time. If more tables are joined together, \
+the output of 1 join is treated as input to subsequent join\
+3. When joining a large number of tables, the genetic query optimizersetiings may affect \
+what combinations of join are considered\
+4. Types\
+	HASH JOIN :\
+	-- Inner table : Build a hash table from inner table, keyed by the join key\
+	-- Outer table : then scan the outer table, checking if a corresponding value is present\
+\
+	show work_mem\
+	work_mem gets used for sorting cases : order_by, distinct and merge join\
+\
+	hash tables -> hash joins, hash based aggregation and hash based processing in subqueries	\
+\
+	explain select * from orders where order_id IN (1234)\
+\
+	MERGE JOIN :\
+\
+	Joins 2 children already sorted by their shared join key. This only needs to scan each relation\
+	once, but both inputs need to be sorted  by the join key first (or scanned in a way that \
+	produces already-sorted output, like an index scan matching the required sort order)\
+\
+	-- Nested loop \
+\
+	explain select * from orders\
+	natural join customers\
+*/}

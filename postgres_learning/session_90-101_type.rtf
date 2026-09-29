@@ -1,0 +1,146 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2706
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 --composite data types\
+\
+--list of field names with corressponding data types\
+-- used in a table as column\
+-- used in a procedure / function\
+-- can return multiple values\
+\
+--create a address composite type\
+create type address as (\
+	city varchar(50),\
+	country varchar(20)\
+);\
+\
+create table companies (\
+	comp_id serial primary key,\
+	address address\
+);\
+\
+insert into companies(address) values (row('bangalore', 'India'))\
+insert into companies(address) values (row('delhi', 'India'))\
+	\
+select * from companies;\
+\
+select address from companies;\
+\
+select (address).city from companies;\
+\
+--when we are dealing with multiple companies\
+\
+select (companies.address).city from companies;\
+\
+select (companies.address).city from companies where (companies.address).city = 'delhi';\
+\
+--create a currency  ENUM data type \
+\
+create type currency as ENUM('INR', 'USD', 'GBP')\
+\
+select 'INR'::currency\
+\
+alter type currency add value 'EUR' after 'USD'\
+\
+create table stocks(\
+	stock_id serial primary key,\
+	stock_currecy currency\
+)\
+\
+insert into stocks(stock_currecy) values ('USD')\
+\
+select * from stocks\
+\
+--drop type name\
+\
+--create and alter type\
+create type myaddress as (\
+	city varchar(50),\
+	country varchar(20)\
+)\
+\
+alter type myaddress rename to my_address\
+\
+--alter type my_address owner to owner_name\
+\
+--alter type my_address set schema test_schema\
+\
+-- alter schema and add new attribute\
+-- alter type test_schema.my_address add attribute street varchar(150)\
+\
+--alter enum data type\
+create type my_colors as ENUM('blue', 'red', 'green')\
+\
+alter type my_colors rename value 'red' to 'orange'\
+\
+--list all enum values\
+select enum_range(NULL::my_colors)\
+\
+--enum type , add a new value\
+alter type my_colors add value 'purple' before 'green'\
+\
+--update enum type in production server\
+create type status_enum as enum('queued', 'waiting', 'running', 'done')\
+\
+create table jobs (\
+	job_id serial primary key,\
+	job_status status_enum\
+)\
+\
+insert into jobs(job_status) values ('done')\
+\
+select * from jobs\
+\
+--change all waiting to running\
+--1st step\
+update jobs set job_status = 'running' where job_status = 'waiting'\
+--2nd step\
+alter type status_enum rename to status_enum_old\
+--3rd step\
+create type status_enum as enum('queued', 'running', 'done')\
+--4th step\
+alter table jobs alter column job_status type status_enum using job_status::text::status_enum\
+--5th step \
+drop type status_enum_old\
+\
+\
+--an enum with default value in a table\
+create type status as enum ('pending', 'approved', 'declined')\
+\
+create table cron_jobs(\
+	cron_job_id INT,\
+	status status default 'pending'\
+)\
+\
+insert into cron_jobs(cron_job_id)\
+values (2)\
+\
+select * from cron_jobs;\
+\
+insert into cron_jobs(cron_job_id, status)\
+values (2, 'approved')\
+\
+--create a tyoe if not exists using pl/pgSQL\
+\
+DO\
+$$\
+BEGIN\
+	IF not exists (\
+		select * \
+			from pg_type typ\
+				inner join pg_namespace nsp\
+					on nsp.oid = typ.typnamespace\
+			where nsp.nspname = 'ai') then\
+		create type ai\
+			as (\
+				a text,\
+				i integer\
+			);\
+	END IF;\
+END;\
+$$\
+language plpgsql;}

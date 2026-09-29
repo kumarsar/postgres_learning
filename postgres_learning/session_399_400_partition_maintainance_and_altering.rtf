@@ -1,0 +1,72 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2706
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 \
+-- partition maintainance\
+\
+-- attach a new partition\
+\
+-- new country code sp, singapore\
+\
+create table employee_list_sp partition of employee_list\
+for values in ('SP')\
+\
+insert into employee_list (id, birth_date, country_code)\
+values \
+(10, '2020-01-01', 'SP')\
+\
+select * From employee_list\
+select * From employee_list_sp\
+\
+-- detach a partition\
+\
+alter table table_name detach partition partition_name\
+\
+alter table employee_list\
+detach partition employee_list_sp\
+\
+select * From employee_list\
+\
+-- altering bounds of partition\
+\
+create table t1(\
+	a int,\
+	b int\
+) partition by range(a)\
+0-100\
+100-200\
+\
+create table tlp1 partition of t1 \
+for values from (0) to (100)\
+\
+create table tlp2 partition of t1 \
+for values from (200) to (300)\
+\
+insert into t1(a, b)\
+values (1,1)\
+\
+select * From t1\
+select * From tlp1\
+select * From tlp2\
+\
+insert into t1(a, b)\
+values (150,150)\
+\
+-- detach\
+-- alter\
+-- attach\
+\
+rollback\
+	\
+begin transaction\
+	alter table t1 detach partition tlp1\
+	alter table t1 attach partition tlp1 for values from (0) to (200)\
+end transaction\
+\
+insert into t1(a, b)\
+values (150,150)\
+}

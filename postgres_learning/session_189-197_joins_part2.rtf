@@ -1,0 +1,92 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2706
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 SELECT product_id, product_name\
+	FROM public.left_products;\
+	\
+select * from public.right_products;\
+\
+-- FULL join\
+\
+select * \
+from left_products\
+full join right_products \
+on left_products.product_id = right_products.product_id\
+\
+-- Does the order matter, means number of rows gets changed : NO\
+\
+-- JOINING MULTIPLE TABLES\
+-- Is join same as inner join ? : yes, inner join is the default if you\
+-- dont specify the type when you use the word JOIN\
+\
+-- SELF JOIN\
+\
+-- USE cases :\
+-- query hierarchical data or\
+-- to compare rows within the same table\
+\
+/*\
+	select \
+		column_list\
+	from tablename t1\
+	inner join tablename t1 on t1.column = t2.column\
+*/\
+\
+-- self join left products table\
+\
+select *\
+from left_products l1\
+inner join left_products l2 on l1.product_id = l2.product_id\
+\
+-- columns could be different but type should be same\
+select *\
+from left_products l1\
+inner join left_products l2 \
+on cast(l1.product_id as VARCHAR) = l2.product_name \
+\
+-- self join find all pairs of movies that have the same movie length\
+select \
+	mv1.movie_name,\
+	mv2.movie_name,\
+	mv1.movie_length,\
+	mv2.movie_length\
+from movies mv1\
+inner join movies mv2\
+on mv1.movie_length = mv2.movie_length\
+\
+-- self join find all pairs of movies that have the same movie length and \
+-- removing same values\
+select \
+	mv1.movie_name,\
+	mv2.movie_name,\
+	mv1.movie_length\
+from movies mv1\
+inner join movies mv2\
+on mv1.movie_length = mv2.movie_length\
+where mv1.movie_name <> mv2.movie_name\
+order by mv1.movie_length desc\
+\
+-- lets query hierarchical data like all directors and movies\
+select *\
+from movies\
+order by director_id\
+\
+select \
+	t1.movie_name,\
+	t2.director_id\
+from movies t1\
+inner join movies t2\
+on t1.director_id = t2.movie_id\
+order by t2.director_id, t1.movie_name\
+\
+select \
+	movie_name,\
+	director_id\
+from movies\
+order by director_id\
+\
+}

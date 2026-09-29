@@ -1,0 +1,86 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2706
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 \
+\
+create table t_temperature_log (\
+	id_temparature_log serial primary key,\
+	add_date timestamp,\
+	temparature numeric\
+)\
+\
+-- create a function to check inserted data\
+\
+create or replace function fn_temparature_value_check_at_insert()\
+returns trigger\
+language plpgsql\
+as\
+$$\
+	BEGIN\
+		-- temparature < -30, make it as ZERO\
+\
+		IF NEW.temparature < -30 THEN\
+			NEW.temparature = 0;\
+		END IF;\
+\
+		RETURN NEW;\
+	END;\
+$$\
+\
+--lets bind our function to table\
+\
+create trigger trg_temparature_value_check_at_insert\
+before insert \
+on t_temperature_log\
+for each row\
+execute procedure fn_temparature_value_check_at_insert();\
+\
+-- insert data\
+\
+insert into t_temperature_log(\
+	add_date,\
+	temparature\
+)\
+values\
+('2020-10-01', -10)\
+\
+\
+select * From t_temperature_log\
+\
+drop function fn_trigger_variables_display()\
+	\
+create or replace function fn_trigger_variables_display() \
+returns trigger\
+language plpgsql\
+as \
+$$\
+	BEGIN\
+		RAISE NOTICE 'TG_NAME : %', TG_NAME;\
+		RAISE NOTICE 'TG_RELNAME : %', TG_RELNAME;\
+		RAISE NOTICE 'TG_TABLE_SCHEMA : %', TG_TABLE_SCHEMA;\
+		RAISE NOTICE 'TG_TABLE_NAME : %', TG_TABLE_NAME;\
+		RAISE NOTICE 'TG_WHEN : %', TG_WHEN;\
+		RAISE NOTICE 'TG_LEVEL : %', TG_LEVEL;\
+		RAISE NOTICE 'TG_OP : %', TG_OP;\
+		RAISE NOTICE 'TG_NARGS : %', TG_NARGS;\
+		RAISE NOTICE 'TG_ARGV : %', TG_ARGV;\
+\
+		RETURN NEW;\
+	\
+	END;\
+$$\
+\
+-- LETS BIND THE FUNCTION TO TABLE AFTER THE INSERT\
+\
+DROP TRIGGER trg_name ON t_temperature_log;\
+	\
+create trigger trg_name\
+after insert\
+on t_temperature_log\
+for each row\
+execute procedure fn_trigger_variables_display()\
+}

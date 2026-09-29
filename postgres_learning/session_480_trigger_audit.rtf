@@ -1,0 +1,91 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2706
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 \
+create table audit(\
+	id int\
+)\
+\
+create table audit_log(\
+	username text,\
+	add_time timestamp,\
+	table_name text,\
+	operation text,\
+	row_before json,\
+	row_after json\
+)\
+\
+-- please note that old and new are not NULL for DELETE and INSERT triggers accordingly\
+\
+drop function fn_audit_trigger()\
+	\
+create or replace function fn_audit_trigger()\
+returns trigger\
+language plpgsql\
+as \
+$$\
+	DECLARE\
+		old_row json = NULL;\
+		new_row json = NULL;\
+	BEGIN\
+\
+		--TG_OP\
+\
+		--update, delete\
+			-- old row\
+\
+		IF TG_OP IN ('UPDATE', 'DELETE') THEN\
+			old_row = row_to_json(OLD);\
+		END IF;\
+	\
+		--insert, update\
+			-- new row\
+\
+		IF TG_OP IN ('INSERT', 'UPDATE') THEN\
+			new_row = row_to_json(NEW);\
+		END IF;\
+\
+		--insert audit_log\
+			insert into audit_log(\
+					username ,\
+					add_time ,\
+					table_name ,\
+					operation ,\
+					row_before ,\
+					row_after \
+			) values\
+			(\
+				session_user,\
+				CURRENT_TIMESTAMP AT TIME ZONE 'UTC',\
+				TG_TABLE_SCHEMA || '.' || TG_TABLE_NAME,\
+				TG_OP,\
+				old_row,\
+				new_row\
+			);\
+		RETURN NEW;\
+	END;\
+$$\
+\
+create trigger trg_audit_trigger\
+after insert or update or delete\
+on audit\
+for each row\
+execute procedure fn_audit_trigger()\
+\
+drop trigger trg_audit_trigger on audit\
+\
+select * From audit\
+select * From audit_log\
+\
+insert into audit(id) values(1)\
+insert into audit(id) values(2)\
+\
+update audit\
+set id = 100\
+where id = 1\
+\
+deletE from audit where id = 2}

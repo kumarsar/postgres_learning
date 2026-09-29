@@ -1,0 +1,83 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2706
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 \
+-- window function\
+\
+--using over()\
+\
+-- Employee salary %age vs total\
+\
+select \
+	first_name,\
+	salary,\
+	avg(salary) over (),\
+	sum(salary) over (),\
+	round(salary / sum(salary) over() * 100, 2) as percentage\
+from \
+	employees\
+order by 4 desc\
+\
+-- difference compared to average\
+\
+select \
+	first_name,\
+	salary,\
+	round(avg(salary) over (), 2),\
+	round(salary - avg(salary) over(), 2) as difference\
+from \
+	employees\
+order by 4 asc\
+\
+-- cumulative total using window function\
+\
+select \
+	first_name,\
+	salary,\
+	sum(salary) over () as sum,\
+	sum(salary) over (order by salary desc rows between unbounded preceding and current row) as cumulative\
+from \
+	employees\
+order by 4\
+\
+--comparing with next values\
+\
+select \
+	first_name,\
+	salary,\
+	salary - lead(salary) over (order by salary desc) as compare\
+from \
+	employees\
+\
+select \
+	first_name,\
+	salary,\
+	salary - lead(salary,1) over (order by salary desc) as compareWithNext\
+from \
+	employees\
+\
+--compared to lowest paid employee\
+\
+select \
+	first_name,\
+	salary,\
+	salary - min(salary) over () as compareToLowest\
+from \
+	employees\
+\
+select \
+	first_name,\
+	salary,\
+	salary - last_value(salary) over w,\
+	round((salary - last_value(salary) over w) / last_value(salary) over w * 100, 2)\
+from \
+	employees\
+window \
+	w as (order by salary desc rows between unbounded preceding and unbounded following)\
+\
+\
+}

@@ -1,0 +1,64 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2706
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 --using order by with null values\
+\
+-- when you sort rows that contains NULL, you can specify order of null with non-null values\
+-- by using NULLS FIRST or NULLS LAST option of the order by clause\
+\
+CREATE TABLE demo_sorting(\
+	num INT\
+);\
+\
+INSERT INTO demo_sorting(num)\
+VALUES \
+(1),\
+(2),\
+(3),\
+(NULL);\
+\
+SELECT \
+	* \
+FROM demo_sorting;\
+\
+SELECT \
+	* \
+FROM demo_sorting\
+ORDER BY\
+	num DESC;\
+	\
+--NULLS LAST\
+\
+SELECT \
+	* \
+FROM demo_sorting\
+ORDER BY\
+	num NULLS LAST;\
+	\
+--NULLS FIRST\
+\
+SELECT \
+	* \
+FROM demo_sorting\
+ORDER BY\
+	num NULLS FIRST;\
+	\
+-- \
+\
+--NULLS LAST as well as DESC : NULL LAST has more priority that DESC\
+\
+SELECT \
+	* \
+FROM demo_sorting\
+ORDER BY\
+	num DESC NULLS LAST;\
+	\
+-- drop table\
+\
+DROP TABLE demo_sorting;\
+ \
+}

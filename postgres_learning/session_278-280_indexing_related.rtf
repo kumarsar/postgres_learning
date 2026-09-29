@@ -1,0 +1,59 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2706
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 -- Adding data while indexing\
+\
+create index concurrently\
+\
+create index concurrently idx_t_big_name_2 on t_big(name)\
+\
+select oid, relname, relpages, reltuples,\
+	i.indisunique, i.indisclustered, i.indisvalid,\
+	pg_catalog.pg_get_indexdef(i.indexrelid, 0, true)\
+	from pg_class c \
+	join pg_index i on c.oid = i.indrelid\
+	where c.relname = 't_big'\
+\
+-- Invalidating an index\
+\
+select oid, relname, relpages, reltuples,\
+	i.indisunique, i.indisclustered, i.indisvalid,\
+	pg_catalog.pg_get_indexdef(i.indexrelid, 0, true)\
+	from pg_class c \
+	join pg_index i on c.oid = i.indrelid\
+	where c.relname = 'orders'\
+\
+explain select * from orders where ship_country = 'USA' -- seq scan\
+\
+-- create index on orders\
+create index idx_orders_ship_country on orders (ship_country)\
+\
+explain select * from orders where ship_country = 'USA' -- heap scan\
+\
+-- lets disallow the query optimiser to use our index\
+\
+update pg_index\
+set indisvalid = false\
+where indexrelid = (select oid from pg_class\
+					where relkind = 'i'\
+					and relname = 'idx_orders_ship_country')\
+\
+explain select * from orders where ship_country = 'USA' -- seq scan again\
+\
+\
+-- Rebuilding an index (REINDEX)\
+\
+REINDEX [(VERBOSE)] \{ INDEX | TABLE| SCHEMA | DATABASE | SYSTEM \} [ CONCURRENTLY ] NAME\
+\
+REINDEX (VERBOSE) index idx_orders_customer_id_order_id;\
+\
+--reindexing entire table\
+\
+REINDEX (VERBOSE) table orders;\
+\
+REINDEX (VERBOSE) table concurrently orders;\
+}

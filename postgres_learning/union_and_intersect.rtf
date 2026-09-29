@@ -1,0 +1,138 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2706
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 -- UNION\
+\
+-- union operator combines result sets from 2 or more select statements \
+-- into a single result set\
+\
+-- To be able to use union\
+ 	--Order and number of columns in the select list of all queries must be same\
+	-- The data type must be compatible too\
+	\
+-- select c1, c2\
+-- from table t1\
+-- union\
+-- select c1, c2\
+-- from table t2\
+\
+select *\
+from left_products\
+union\
+select *\
+from right_products\
+\
+-- do we get duplicate when we used joins ? : it gives unique records\
+\
+insert into right_products (product_id, product_name)\
+values ('10', 'Pen')\
+\
+-- what if we want duplicate records\
+\
+select *\
+from left_products\
+union all\
+select *\
+from right_products\
+\
+--let scombine directors and actors table\
+\
+select \
+	first_name,\
+	last_name\
+from directors -- 38 records\
+union \
+select \
+	first_name,\
+	last_name\
+from actors -- 147 records\
+\
+-- can we use union with order by\
+\
+select \
+	first_name,\
+	last_name,\
+	'directors' as table_name\
+from directors -- 38 records\
+union \
+select \
+	first_name,\
+	last_name,\
+	'actors' as table_name\
+from actors -- 147 records\
+order by first_name asc\
+\
+-- lets combine all directors  where nationality are american, chinese and\
+-- Japanese with all female actors\
+\
+select \
+	first_name,\
+	nationality,\
+	'directors' as table_name\
+from directors\
+where nationality in ('English','Japanese','Chinese')\
+union\
+select \
+	first_name,\
+	gender,\
+	'actors' as table_name\
+from actors\
+where gender = 'F'\
+order by first_name\
+\
+-- union tables with different number of columns\
+\
+-- create table table1\
+\
+create table table1(\
+	col1 INT,\
+	col2 INT\
+);\
+\
+create table table2(\
+	col3 INT\
+);\
+\
+--lets use union with NULL\
+select \
+	col1,\
+	col2\
+from table1\
+UNION\
+select\
+	NULL as col1,\
+	col3\
+from table2\
+\
+-- drop sample tables\
+drop table table2\
+\
+--intersect\
+\
+select \
+	first_name,\
+	last_name\
+from directors\
+intersect\
+select \
+	first_name,\
+	last_name\
+from actors\
+order by first_name\
+\
+--except\
+\
+--lets try on left and right product\
+select \
+	product_id,\
+	product_name\
+from left_products\
+except\
+select \
+	product_id,\
+	product_name\
+from right_products}

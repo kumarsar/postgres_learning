@@ -1,0 +1,211 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2706
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 -- 1. lets create our test table in which we will be calculating the subtotals\
+\
+create table courses(\
+	course_id serial primary key,\
+	course_name varchar(100) not null,\
+	course_level varchar(100) not null,\
+	sold_units int not null\
+);\
+\
+--2. browse data \
+select * from courses;\
+\
+-- 3. insert\
+\
+insert into \
+	courses (course_name, course_level, sold_units)\
+values \
+	('Machine learning with python', 'premium', 100),\
+	('Data science bootcamp', 'premium', 50),\
+	('introduction to python', 'basic', 200),\
+	('Understanding MongoDB', 'premium', 100),\
+	('Algorithm design with python', 'premium', 200)\
+\
+select * from courses\
+order by course_level, sold_units;\
+\
+-- 4. Lets organize some data\
+\
+select \
+	course_level,\
+	course_name,\
+	sold_units\
+from \
+	courses\
+\
+-- 5. lets find total unit sold by each course level\
+\
+select \
+	course_level,\
+	sum(sold_units) as total_sold\
+from \
+	courses\
+group by \
+	course_level\
+\
+-- basic : 200\
+-- premium : 450\
+\
+-- 6. lets organise a bit more using order by\
+\
+select \
+	course_level,\
+	course_name,\
+	sum(sold_units) as total_sold\
+from \
+	courses\
+group by \
+	course_level,\
+	course_name\
+order by \
+	course_level,\
+	course_name\
+\
+-- 7. lets use rollup\
+\
+select \
+	course_level,\
+	course_name,\
+	sum(sold_units) as total_sold\
+from \
+	courses\
+group by \
+	rollup(course_level,course_name)\
+order by \
+	course_level,\
+	course_name\
+\
+-- 8. we can even do a partial rollup\
+\
+select \
+	course_level,\
+	course_name,\
+	sum(sold_units) as total_sold\
+from \
+	courses\
+group by \
+	course_level,\
+	rollup(course_name)\
+order by \
+	course_level,\
+	course_name\
+\
+--------------------------------------------\
+\
+-- 1. subtotoal with rollups\
+	\
+create table inventory(\
+	inventory_id serial primary key,\
+	category varchar(100) not null,\
+	sub_category varchar(100) not null,\
+	product varchar(100) not null,\
+	quantity int\
+)\
+\
+-- 2. insert \
+	\
+insert into \
+	inventory (category, sub_category, product, quantity)\
+values \
+	('Furniture', 'Chair', 'Black', 10),\
+	('Furniture', 'Chair', 'Brown', 10),\
+	('Furniture', 'Desk', 'Blue', 10),\
+	('Equipment', 'Computer', 'Mac', 5),\
+	('Equipment', 'Computer', 'PC', 5),\
+	('Equipment', 'Monitor', 'Dell', 10);\
+\
+select * from inventory\
+\
+-- 3. group data by category and sub_category\
+\
+select \
+	category,\
+	sub_category,\
+	sum(quantity) as "Quantity"\
+from inventory\
+group by \
+	category,\
+	sub_category\
+order by \
+	category,\
+	sub_category\
+\
+-- 4. see sub total of each category and a final total ?\
+-- Lets do group sets on category and sub category using ROLLUP\
+\
+select \
+	category,\
+	sub_category,\
+	sum(quantity) as "Quantity"\
+from inventory\
+group by \
+	ROLLUP(category,sub_category)\
+order by \
+	category,\
+	sub_category\
+\
+-- using group by with rollup\
+\
+-- 5. can we roll out a plan for null values ?\
+/*\
+	--Grouping is a specail aggregate function that works in conjunction with rollup\
+	--grouping(column_name)\
+	--grouping returns 0 or 1 : function returns 0 if it is not a subtotal row for given column_name\
+*/\
+\
+-- 6. Lets organise our data with some case conditions  to grouping = 1\
+\
+select \
+	category,\
+	sub_category,\
+	sum(quantity) as "Quantity",\
+	grouping(category) as "Category grouping",\
+	grouping(sub_category) as "SubCategory grouping"\
+from inventory\
+group by \
+	ROLLUP(category,sub_category)\
+order by \
+	category,\
+	sub_category\
+\
+-- 7. Handling both 0 and 1 output of grouping \
+-- category,sub_category,quantity,subtotal/total\
+\
+select \
+	coalesce (category,'') as Category,\
+	coalesce (sub_category, '') as SubCategory,\
+	sum(quantity) as "Quantity",\
+	case\
+		when grouping(category) = 1 then 'Grand Total' else ''\
+	end as "Subtotal/total"\
+from inventory\
+group by \
+	ROLLUP(category,sub_category)\
+order by \
+	category,\
+	sub_category\
+\
+-- 8. category,sub_category,quantity\
+\
+select \
+	case\
+		when grouping(category) = 1 then 'Grand Total'\
+		when grouping(sub_category) = 1 then 'SubTotal ==>'\
+		else\
+			coalesce(category,'')\
+	end as "Category",\
+	coalesce (sub_category, '') as SubCategory,\
+	sum(quantity) as "Quantity"\
+from inventory\
+group by \
+	ROLLUP(category,sub_category)\
+order by \
+	category,\
+	sub_category}

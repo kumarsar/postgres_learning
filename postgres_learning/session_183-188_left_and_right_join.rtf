@@ -1,0 +1,156 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2706
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fnil\fcharset0 Menlo-Regular;}
+{\colortbl;\red255\green255\blue255;\red0\green0\blue0;\red193\green193\blue193;}
+{\*\expandedcolortbl;;\cssrgb\c0\c0\c0;\cssrgb\c80000\c80000\c80000;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\partightenfactor0
+
+\f0\fs24 \cf2 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec3 -- LEFT JOINS\
+\
+-- Returns every row from the LEFT table plus rows that match values in the \
+-- joined column from the right table. When a left table row Doesn\'92t have a \
+-- match in the right table, the result shows no values from the right table\
+\
+/*\
+select \
+	table1.column1\
+	table2.column1\
+from table1\
+left join table2 on table1.column1 = table2.column2\
+*/\
+\
+create table left_products(\
+	product_id serial primary key,\
+	product_name varchar(100)\
+)\
+\
+create table right_products(\
+	product_id serial primary key,\
+	product_name varchar(100)\
+)\
+\
+insert into left_products(product_id, product_name)\
+values (1, 'computers'),\
+(2, 'laptops'),\
+(3, 'monitors'),\
+(5, 'mics')\
+\
+select * from left_products\
+\
+insert into right_products(product_id, product_name)\
+values (1, 'computers'),\
+(2, 'laptops'),\
+(3, 'monitors'),\
+(4, 'pen'),\
+(7, 'papers')\
+\
+select * from right_products\
+\
+--lets join using left join\
+\
+select *\
+from left_products\
+left join right_products \
+on left_products.product_id = right_products.product_id\
+\
+-- use movies table for left join\
+-- list all movies with director's first name, last name and movie name\
+\
+select \
+	mv.movie_name,\
+	\
+	d.first_name,\
+	d.last_name\
+from movies mv\
+left join directors d on mv.director_id = d.director_id\
+\
+-- lets reverse table in left join \
+\
+select \
+	d.first_name,\
+	d.last_name,\
+\
+	mv.movie_name\
+from directors d\
+left join movies mv on mv.director_id = d.director_id\
+\
+-- lets add a record in our directors table\
+\
+insert into \
+	directors(first_name, last_name, date_of_birth, nationality)\
+values\
+	('James', 'David', '2010-01-01', 'American')\
+	\
+select * from directors;\
+\
+-- in left join , all data from left table will be present\
+\
+-- can we add a where condition, say get list of English and Chinese movies only\
+select \
+	d.first_name,\
+	d.last_name,\
+\
+	mv.movie_name,\
+	mv.movie_lang\
+from directors d\
+left join movies mv on mv.director_id = d.director_id\
+where\
+	mv.movie_lang in ('English', 'Chinese')\
+	\
+-- count all movies for each directors\
+\
+select\
+	d.first_name,\
+	d.last_name,\
+	\
+	count(*) as all_movie_count\
+from directors d\
+left join movies mv on mv.director_id = d.director_id\
+group by d.first_name, d.last_name\
+order by 3 desc\
+\
+-- get all movies with age certification for all directors where nationalities \
+-- are american, Chinese and Japanese\
+\
+select \
+	mv.movie_name,\
+	mv.movie_lang,\
+	\
+	d.first_name,\
+	d.last_name,\
+	d.nationality\
+from directors d \
+left join movies mv on mv.director_id = d.director_id\
+where\
+	d.nationality in ('English', 'Chinese', 'Japanese')\
+	\
+-- get all the total revenues done by each film for each director\
+-- what is first table, movies or directors ???\
+\
+select \
+	d.first_name,\
+	d.last_name,\
+	\
+	SUM(mr.revenues_domestic + mr.revenues_international) as total_revenue\
+from directors d \
+left join movies mv on mv.director_id = d.director_id\
+left join movies_revenues mr on mv.movie_id = mr.movie_id\
+group by d.first_name, d.last_name\
+having SUM(mr.revenues_domestic + mr.revenues_international) > 100\
+order by SUM(mr.revenues_domestic + mr.revenues_international) desc NULLs last\
+\
+-- right JOINS\
+/*\
+select \
+	table1.column1\
+	table2.column1\
+from table1\
+right join table2 on table1.column1 = table2.column2\
+*/\
+\
+select * \
+from left_products\
+right join right_products on left_products.product_id = right_products.product_id\
+}

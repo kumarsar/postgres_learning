@@ -1,0 +1,211 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2706
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 --JOINS\
+\
+--INner joins\
+--for inner joins,\
+-- all common columns defined at ON must match values on both tables\
+\
+--combine movies and director table\
+\
+select * \
+from movies\
+order by director_id\
+\
+select * \
+from directors\
+order by director_id\
+\
+select\
+	movies.movie_id,\
+	movies.movie_name,\
+	movies.director_id\
+from movies\
+inner join directors\
+on movies.director_id = directors.director_id\
+\
+select\
+	movies.movie_id,\
+	movies.movie_name,\
+	movies.director_id,\
+	\
+	directors.first_name\
+from movies\
+inner join directors\
+on movies.director_id = directors.director_id\
+\
+--using joins with an alias\
+-- normal way , long way\
+\
+select\
+	movies.movie_id,\
+	movies.movie_name,\
+	movies.director_id,\
+	\
+	directors.first_name\
+from movies\
+inner join directors\
+on movies.director_id = directors.director_id\
+\
+-- Alias way\
+\
+select\
+	mv.movie_id,\
+	mv.movie_name,\
+	mv.director_id,\
+	\
+	d.first_name\
+from movies mv \
+inner join directors d \
+on mv.director_id = d.director_id\
+\
+-- lets filter some records\
+\
+select\
+	mv.movie_id,\
+	mv.movie_name,\
+	mv.director_id,\
+	mv.movie_lang,\
+	\
+	d.first_name\
+from movies mv \
+inner join directors d \
+on mv.director_id = d.director_id\
+where mv.movie_lang = 'English'\
+and d.director_id = 3\
+\
+-- inner join with using\
+-- we use USING only when joining tables have the SAME COLUMN NAMES, \
+-- rather than ON, lets say same column name is column1\
+\
+select \
+	table1.column1,\
+	table2.column1\
+from table1\
+inner join table2 using (column1)\
+\
+-- connect movies and director with using keyword\
+select\
+	*\
+from movies\
+inner join directors using (director_id)\
+\
+--same as above\
+select\
+	*\
+from movies\
+inner join directors on movies.director_id = directors.director_id\
+\
+-- connect 2 or more tables\
+-- movies, directors and movies_revenues\
+\
+select *\
+from movies\
+inner join directors using (director_id)\
+inner join movies_revenues using (movie_id)\
+\
+-- select movie name, director name and domestic revenue for\
+-- all japanese movies\
+\
+select \
+	mv.movie_name,\
+	\
+	d.first_name,\
+	\
+	mr.revenues_domestic\
+from movies mv\
+inner join directors d using(director_id)\
+inner join movies_revenues mr using (movie_id)\
+where\
+	mv.movie_lang = 'Japanese'\
+	\
+-- select movie name, director name for all English, Japanese and Chinese\
+-- movies where domestic revenue is greater than 100\
+select \
+	mv.movie_name,\
+	\
+	d.first_name,\
+	\
+	mr.revenues_domestic\
+from\
+	movies mv\
+inner join directors d using (director_id)\
+inner join movies_revenues mr using (movie_id)\
+where \
+	mv.movie_lang in ('English', 'Japanese', 'Chinese')\
+	and mr.revenues_domestic > 100\
+order by\
+	mr.revenues_domestic asc\
+	\
+-- select movie name, director name , movie language, total revenues for top 5 \
+-- movies\
+select \
+	mv.movie_name,\
+	mv.movie_lang,\
+	\
+	d.first_name,\
+	\
+	(mr.revenues_domestic + mr.revenues_international) as total_revenues\
+from movies mv\
+inner join directors d using (director_id)\
+inner join movies_revenues mr using (movie_id)\
+order by \
+	4 desc nulls last\
+limit 5\
+\
+-- top 10 most profitable movies between year 2005 and 2008.\
+-- print movie name, director name, movie language and total revenues\
+\
+select \
+	mv.movie_name,\
+	mv.movie_lang,\
+	mv.release_date,\
+	\
+	d.first_name,\
+	\
+	(mr.revenues_domestic + mr.revenues_international) as total_revenues\
+from movies mv\
+inner join directors d using (director_id)\
+inner join movies_revenues mr using (movie_id)\
+where \
+	mv.release_date > '2004-12-31'\
+	and \
+	mv.release_date < '2009-01-01'\
+order by \
+	5 desc nulls last\
+limit 10\
+\
+-- how to inner join tables with different column data types\
+\
+--create a table with int data type\
+create table t1 (test int);\
+\
+--create a table with int varchar type\
+create table t2 (test varchar(10));\
+\
+-- can we join them ?\
+\
+select *\
+from \
+	t1\
+inner join t2 using (test)\
+\
+-- use CAST to join them\
+\
+select *\
+from \
+	t1\
+inner join t2 on t1.test = CAST(t2.test as int)\
+\
+select *\
+from \
+	t1\
+inner join t2 on CAST(t1.test as varchar(20)) = t2.test\
+\
+insert into t1(test) values (1),(2);\
+insert into t2(test) values ('aa'),('bb');}
